@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.38"
 clap = { version = "4.5.21", features = ["derive", "string"] }
-cli-clipboard = "0.4.0"
 color-eyre = "0.6.3"
 include_dir = "0.7.4"
 serde = { version = "1.0.215", features = ["serde_derive"] }
 toml = "0.8.19"
+wl-clipboard-rs = "0.9.1"

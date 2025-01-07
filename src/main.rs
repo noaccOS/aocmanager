@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::io::Read;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -8,9 +9,10 @@ use chrono::Datelike;
 use clap::Parser;
 use clap::Subcommand;
 use color_eyre::eyre;
-use color_eyre::eyre::bail;
-use color_eyre::eyre::Context;
-use color_eyre::eyre::OptionExt;
+
+use eyre::bail;
+use eyre::Context;
+use eyre::OptionExt;
 
 mod configuration;
 use configuration::Configuration;
@@ -20,6 +22,7 @@ use templates::variant::RunVariant;
 use templates::variant::Variant;
 use templates::AoCTemplate;
 use templates::Template;
+
 #[derive(Parser, Debug)]
 #[command(propagate_version = true)]
 #[command(version, about, long_about = None)]
@@ -108,6 +111,18 @@ fn day_root(aoc_root: &Path, day: u8) -> PathBuf {
     aoc_root.join(format!("days/{day:02}"))
 }
 
+fn get_clipboard() -> eyre::Result<String> {
+    let mut contents = String::new();
+
+    let (mut pipe, _mime) = wl_clipboard_rs::paste::get_contents(
+        wl_clipboard_rs::paste::ClipboardType::Regular,
+        wl_clipboard_rs::paste::Seat::Unspecified,
+        wl_clipboard_rs::paste::MimeType::Text,
+    )?;
+    pipe.read_to_string(&mut contents)?;
+    Ok(contents)
+}
+
 fn create_new_day(day: u8, template: Template) -> eyre::Result<()> {
     let root = find_aoc_root()?;
     let day_root = day_root(&root, day);
@@ -115,11 +130,11 @@ fn create_new_day(day: u8, template: Template) -> eyre::Result<()> {
 
     template.template().extract(&day_root)?;
 
-    let input_contents = cli_clipboard::get_contents().unwrap();
+    let input_contents = get_clipboard().unwrap();
     template.add_input(&day_root, &input_contents)?;
 
     let day_config = DayConfiguration { day, template };
-    let mut config = Configuration::read(&root)?;
+    let mut config = Configuration::read(&root).unwrap_or_default();
     config.days.push(day_config);
     config.write(&root)?;
 
@@ -159,9 +174,9 @@ fn init_aoc(root: PathBuf) -> eyre::Result<()> {
 }
 
 fn main() -> eyre::Result<()> {
-    let args = Args::parse();
     color_eyre::install()?;
-    // dbg!(args);
+    let args = Args::parse();
+
     match args.command {
         Commands::New { day, template } => {
             create_new_day(day, template).wrap_err("creating new day failed")
@@ -185,7 +200,7 @@ fn add_sample(day: u8, variant: Variant) -> eyre::Result<()> {
         .for_day(day)
         .expect("day {?:day} not initialized");
 
-    let input = cli_clipboard::get_contents().unwrap();
+    let input = get_clipboard().unwrap();
     let mut result = String::new();
     std::io::stdin().read_to_string(&mut result)?;
 

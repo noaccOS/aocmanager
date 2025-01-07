@@ -1,9 +1,9 @@
+use color_eyre::eyre;
+
 use std::{
     fs,
     path::{Path, PathBuf},
 };
-
-use color_eyre::eyre;
 
 use crate::templates::Template;
 

@@ -1,3 +1,4 @@
+use color_eyre::eyre;
 use std::{fs, path::Path, process::Command};
 
 use include_dir::include_dir;
@@ -16,7 +17,7 @@ impl AoCTemplate for Zig {
         TEMPLATE_DIR
     }
 
-    fn add_input(&self, day_root: &Path, input_contents: &str) -> color_eyre::eyre::Result<()> {
+    fn add_input(&self, day_root: &Path, input_contents: &str) -> eyre::Result<()> {
         let assets_dir = day_root.join("assets");
         fs::create_dir_all(&assets_dir)?;
         fs::write(assets_dir.join("input"), input_contents)?;
@@ -69,7 +70,7 @@ impl AoCTemplate for Zig {
         variant: super::variant::Variant,
         input: &str,
         result: &str,
-    ) -> color_eyre::eyre::Result<()> {
+    ) -> eyre::Result<()> {
         let variant_str = match variant {
             crate::templates::variant::Variant::A => "a",
             crate::templates::variant::Variant::B => "b",

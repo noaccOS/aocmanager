@@ -31,20 +31,33 @@
         in
         {
           packages.default = craneLib.buildPackage {
-            buildInputs = [
-              # Gleam
-              pkgs.gleam
-              pkgs.erlang
-
-              # Zig
-              pkgs.zig
-            ];
-
             src = pkgs.lib.cleanSourceWith {
-              src = craneLib.path ./.;
-         
-              filter = path: type: (builtins.match "^templates/" path != null) || craneLib.filterCargoSources path type;
+              src = ./.;
+              name = "source";
+              # TODO: this filter matches _too much_ (eg: src/templates).
+              # Still, it always works and a perfect solution is pretty hard, as `path` is
+              # the absolute path (and inside src.origSrc)
+              filter =
+                path: type:
+                (builtins.match ".*/templates/.*" path != null) || craneLib.filterCargoSources path type;
             };
+
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+
+            postInstall = ''
+              wrapProgram $out/bin/aocmanager \
+                --prefix PATH : ${
+                  pkgs.lib.makeBinPath [
+                    # Gleam
+                    pkgs.gleam
+                    pkgs.erlang
+
+                    # Zig
+                    pkgs.zig
+                  ]
+                }
+            '';
+
             strictDeps = true;
           };
 
