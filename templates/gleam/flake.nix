@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
   };
 
   outputs =
@@ -16,7 +17,7 @@
         {
           devShells.default = pkgs.mkShell {
             packages = [
-              pkgs.erlang_27
+              pkgs.erlang
               pkgs.gleam
             ];
           };

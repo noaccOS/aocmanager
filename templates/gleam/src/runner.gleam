@@ -4,7 +4,6 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/string
-import gleeunit/should
 import simplifile
 import solution
 
@@ -36,7 +35,7 @@ fn read_samples(variant: Variant) -> List(#(String, String)) {
     let input =
       simplifile.read(samples_dir <> sample <> "/input") |> result.unwrap("")
     let expected =
-      simplifile.read(samples_dir <> sample <> "/result") |> result.unwrap("")
+      simplifile.read(samples_dir <> sample <> "/expected") |> result.unwrap("")
 
     #(input, expected)
   })
@@ -51,9 +50,10 @@ fn run_samples(variant: Variant) {
   read_samples(variant)
   |> list.map(fn(sample) {
     let #(input, expected) = sample
+    let trimmed = string.trim_end(expected)
+    let solution = solution_variant(input)
 
-    solution_variant(input)
-    |> should.equal(expected)
+    assert solution == expected || solution == trimmed
   })
 
   Nil
